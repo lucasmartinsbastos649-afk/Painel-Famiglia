@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel Premium</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#0b1020;color:#f5f7ff}
+header{padding:22px 28px;background:#111936;border-bottom:1px solid #263052}
+h1{margin:0;font-size:24px} .sub{color:#9ba6c7;margin-top:6px}
+main{max-width:1100px;margin:auto;padding:25px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:#121a36;border:1px solid #283252;border-radius:14px;padding:20px}
+.label{color:#9ba6c7;font-size:13px}.value{font-size:28px;font-weight:bold;margin-top:8px}
+section{margin-top:20px}.toolbar{display:flex;gap:10px;flex-wrap:wrap}
+input,select,button{border:0;border-radius:10px;padding:12px 14px;font-size:14px}
+input,select{background:#18213f;color:white;border:1px solid #303b60;flex:1}
+button{background:#5b6cff;color:white;font-weight:bold;cursor:pointer}
+button:hover{filter:brightness(1.1)}
+table{width:100%;border-collapse:collapse;margin-top:15px;background:#121a36;border-radius:14px;overflow:hidden}
+th,td{padding:14px;text-align:left;border-bottom:1px solid #27304e;font-size:14px}
+th{color:#9ba6c7}.status{padding:6px 9px;border-radius:20px;font-size:12px;background:#173c2b;color:#6df0a5}
+.premium{color:#ffd86b;font-weight:bold}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){main{padding:15px}.grid{grid-template-columns:1fr 1fr}th:nth-child(3),td:nth-child(3){display:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎮 Painel Premium</h1>
+  <div class="sub">Gerenciamento de assinaturas e pagamentos</div>
+</header>
+
+<main>
+  <div class="grid">
+    <div class="card"><div class="label">Preço Premium</div><div class="value">R$ 19,90</div></div>
+    <div class="card"><div class="label">Premium ativos</div><div class="value" id="ativos">0</div></div>
+    <div class="card"><div class="label">Pagamentos aprovados</div><div class="value" id="pagamentos">0</div></div>
+    <div class="card"><div class="label">Receita</div><div class="value" id="receita">R$ 0,00</div></div>
+  </div>
+
+  <section class="card">
+    <h2>Ativar Premium manualmente</h2>
+    <div class="toolbar">
+      <input id="usuario" placeholder="ID ou nome do jogador">
+      <button onclick="ativar()">⭐ Ativar por R$ 19,90</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Usuários</h2>
+    <table>
+      <thead><tr><th>Jogador</th><th>Plano</th><th>Pagamento</th><th>Status</th></tr></thead>
+      <tbody id="lista"></tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+const usuarios = JSON.parse(localStorage.getItem("premiumUsuarios") || "[]");
+
+function salvar(){localStorage.setItem("premiumUsuarios",JSON.stringify(usuarios));render();}
+function ativar(){
+  const campo=document.getElementById("usuario"), nome=campo.value.trim();
+  if(!nome){alert("Digite o ID ou nome do jogador.");return;}
+  usuarios.push({nome,plano:"Premium",valor:19.90,status:"Ativo"});
+  campo.value=""; salvar();
+}
+function render(){
+  document.getElementById("ativos").textContent=usuarios.filter(u=>u.status==="Ativo").length;
+  document.getElementById("pagamentos").textContent=usuarios.length;
+  const total=usuarios.reduce((s,u)=>s+u.valor,0);
+  document.getElementById("receita").textContent=total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  document.getElementById("lista").innerHTML=usuarios.map(u=>`
+    <tr><td>${escapeHtml(u.nome)}</td><td class="premium">⭐ ${u.plano}</td>
+    <td>R$ ${u.valor.toFixed(2).replace(".",",")}</td><td><span class="status">${u.status}</span></td></tr>`).join("");
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+render();
+</script>
+</body>
+</html>
